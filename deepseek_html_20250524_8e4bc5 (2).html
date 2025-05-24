@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>К Барьеру!</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a2e;
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #studio {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #2a2a4a 0%, #1a1a2e 100%);
+        }
+        
+        #host {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #e94560;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+            z-index: 10;
+        }
+        
+        .barrier {
+            position: absolute;
+            width: 200px;
+            height: 100px;
+            background-color: #16213e;
+            border: 3px solid #0f3460;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(15, 52, 96, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .barrier:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(15, 52, 96, 0.8);
+        }
+        
+        .barrier.active {
+            border-color: #e94560;
+            box-shadow: 0 0 25px rgba(233, 69, 96, 0.8);
+        }
+        
+        .barrier.blocked {
+            opacity: 0.5;
+            filter: grayscale(50%);
+        }
+        
+        #barrier1 {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        #barrier2 {
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+        }
+        
+        #barrier3 {
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+        }
+        
+        .player-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #0f3460;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .player-name {
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .player-score {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 5px;
+            color: #e94560;
+        }
+        
+        #control-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(10, 10, 30, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            z-index: 100;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+        
+        .control-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .round-btn {
+            background-color: #e94560;
+            color: white;
+        }
+        
+        .correct-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .incorrect-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .action-btn {
+            background-color: #FFC107;
+            color: black;
+        }
+        
+        #login-modal, #barrier-select-modal, #host-login-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #16213e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            text-align: center;
+            width: 300px;
+        }
+        
+        .modal-title {
+            margin-top: 0;
+            color: #e94560;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #0f3460;
+            background-color: #1a1a2e;
+            color: white;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        #host-controls {
+            display: none;
+        }
+        
+        #player-controls {
+            display: none;
+        }
+        
+        #buzzer {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #f44336;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.6);
+            transition: all 0.2s;
+            z-index: 50;
+        }
+        
+        #buzzer:hover {
+            transform: scale(1.1);
+        }
+        
+        #buzzer:active {
+            transform: scale(0.95);
+        }
+        
+        #question-display {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(10, 10, 30, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+            text-align: center;
+            font-size: 20px;
+            display: none;
+            z-index: 20;
+        }
+        
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #e94560;
+            background-color: rgba(10, 10, 30, 0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: none;
+            z-index: 5;
+        }
+        
+        #round-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background-color: rgba(10, 10, 30, 0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        #active-player {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #e94560;
+            background-color: rgba(10, 10, 30, 0.9);
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            z-index: 30;
+        }
+        
+        .shot-btn {
+            background-color: #9C27B0;
+            color: white;
+        }
+        
+        #shot-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            text-align: center;
+            display: none;
+        }
+        
+        .shot-option {
+            padding: 10px;
+            margin: 5px;
+            background-color: #0f3460;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .shot-option:hover {
+            background-color: #e94560;
+        }
+        
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(233, 69, 96, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0); }
+        }
+        
+        .flash {
+            animation: flash 0.5s;
+        }
+        
+        @keyframes flash {
+            0% { background-color: #16213e; }
+            50% { background-color: #e94560; }
+            100% { background-color: #16213e; }
+        }
+    </style>
+</head>
+<body>
+    <div id="studio">
+        <div id="host">Ведущий</div>
+        
+        <div class="barrier" id="barrier1">
+            <div class="player-avatar"></div>
+            <div class="player-name"></div>
+            <div class="player-score">0</div>
+        </div>
+        
+        <div class="barrier" id="barrier2">
+            <div class="player-avatar"></div>
+            <div class="player-name"></div>
+            <div class="player-score">0</div>
+        </div>
+        
+        <div class="barrier" id="barrier3">
+            <div class="player-avatar"></div>
+            <div class="player-name"></div>
+            <div class="player-score">0</div>
+        </div>
+        
+        <div id="question-display"></div>
+        <div id="timer">1:30</div>
+        <div id="round-display"></div>
+        <div id="active-player"></div>
+        
+        <div id="buzzer">БАРЬЕР!</div>
+        
+        <div id="control-panel">
+            <div id="host-controls">
+                <button class="control-btn round-btn" id="start-round">Начать раунд</button>
+                <button class="control-btn correct-btn" id="correct-answer">Правильный ответ (+1)</button>
+                <button class="control-btn incorrect-btn" id="incorrect-answer">Неправильный ответ</button>
+                <button class="control-btn action-btn" id="pause-round">Остановить раунд</button>
+                <button class="control-btn action-btn" id="resume-round">Возобновить раунд</button>
+                
+                <!-- Round 2 specific buttons -->
+                <button class="control-btn correct-btn" id="correct-safe" style="display: none;">Правильный (ББ, +1)</button>
+                <button class="control-btn incorrect-btn" id="incorrect-safe" style="display: none;">Неправильный (ББ)</button>
+                <button class="control-btn correct-btn" id="correct-danger" style="display: none;">Правильный (ОБ, +2)</button>
+                <button class="control-btn incorrect-btn" id="incorrect-danger" style="display: none;">Неправильный (ОБ, -1)</button>
+                
+                <!-- Round 3 specific buttons -->
+                <button class="control-btn correct-btn" id="correct-safe-r3" style="display: none;">Правильный (ББ, +2)</button>
+                <button class="control-btn incorrect-btn" id="incorrect-safe-r3" style="display: none;">Неправильный (ББ, -1)</button>
+                <button class="control-btn correct-btn" id="correct-danger-r3" style="display: none;">Правильный (ОБ, +3)</button>
+                <button class="control-btn incorrect-btn" id="incorrect-danger-r3" style="display: none;">Неправильный (ОБ, -2)</button>
+            </div>
+            
+            <div id="player-controls">
+                <button class="control-btn shot-btn" id="use-shot">Выстрелы (осталось: 2)</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Login Modal -->
+    <div id="login-modal">
+        <h2 class="modal-title">Вход в игру</h2>
+        <input type="text" class="modal-input" id="player-name" placeholder="Ваше имя">
+        <button class="modal-btn" id="join-as-player">Игрок</button>
+        <button class="modal-btn" id="join-as-host">Ведущий</button>
+    </div>
+    
+    <!-- Host Login Modal -->
+    <div id="host-login-modal" style="display: none;">
+        <h2 class="modal-title">Вход для ведущего</h2>
+        <input type="password" class="modal-input" id="host-password" placeholder="Пароль">
+        <button class="modal-btn" id="confirm-host">Подтвердить</button>
+        <button class="modal-btn" id="back-to-login">Назад</button>
+    </div>
+    
+    <!-- Barrier Select Modal -->
+    <div id="barrier-select-modal" style="display: none;">
+        <h2 class="modal-title">Выберите барьер</h2>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+            <button class="modal-btn barrier-option" data-barrier="1">Барьер 1 (верх)</button>
+            <button class="modal-btn barrier-option" data-barrier="2">Барьер 2 (слева)</button>
+            <button class="modal-btn barrier-option" data-barrier="3">Барьер 3 (справа)</button>
+        </div>
+    </div>
+    
+    <!-- Shot Modal -->
+    <div id="shot-modal">
+        <h3>Кому хотите отдать вопрос?</h3>
+        <div id="shot-options"></div>
+        <button class="modal-btn" id="cancel-shot">Отмена</button>
+    </div>
+    
+    <script>
+        // Game state
+        const gameState = {
+            currentRound: 0,
+            isHost: false,
+            playerId: null,
+            playerName: '',
+            barrierId: null,
+            players: {},
+            activePlayer: null,
+            timer: null,
+            timeLeft: 0,
+            questionActive: false,
+            shotsLeft: 2,
+            bankType: null, // 'safe' or 'danger'
+            websocket: null
+        };
+        
+        // DOM Elements
+        const loginModal = document.getElementById('login-modal');
+        const hostLoginModal = document.getElementById('host-login-modal');
+        const barrierSelectModal = document.getElementById('barrier-select-modal');
+        const hostControls = document.getElementById('host-controls');
+        const playerControls = document.getElementById('player-controls');
+        const buzzer = document.getElementById('buzzer');
+        const questionDisplay = document.getElementById('question-display');
+        const timerDisplay = document.getElementById('timer');
+        const roundDisplay = document.getElementById('round-display');
+        const activePlayerDisplay = document.getElementById('active-player');
+        const shotModal = document.getElementById('shot-modal');
+        const shotOptions = document.getElementById('shot-options');
+        const useShotBtn = document.getElementById('use-shot');
+        
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            // In a real implementation, this would connect to your WebSocket server
+            gameState.websocket = {
+                send: (data) => console.log('WebSocket send:', data),
+                close: () => console.log('WebSocket closed')
+            };
+            
+            // Mock WebSocket events for demonstration
+            window.mockWebSocketEvent = (type, data) => {
+                handleWebSocketMessage({ data: JSON.stringify({ type, data }) });
+            };
+        }
+        
+        // Handle WebSocket messages
+        function handleWebSocketMessage(event) {
+            const message = JSON.parse(event.data);
+            console.log('WebSocket message:', message);
+            
+            switch (message.type) {
+                case 'player_joined':
+                    updatePlayer(message.data);
+                    break;
+                case 'player_left':
+                    removePlayer(message.data);
+                    break;
+                case 'round_started':
+                    startRound(message.data.round);
+                    break;
+                case 'question_asked':
+                    askQuestion(message.data.question);
+                    break;
+                case 'player_buzzed':
+                    playerBuzzed(message.data.playerId);
+                    break;
+                case 'answer_result':
+                    processAnswerResult(message.data);
+                    break;
+                case 'player_blocked':
+                    blockPlayer(message.data.playerId);
+                    break;
+                case 'player_unblocked':
+                    unblockPlayer(message.data.playerId);
+                    break;
+                case 'round_ended':
+                    endRound();
+                    break;
+                case 'game_ended':
+                    endGame(message.data.winner);
+                    break;
+                case 'shot_used':
+                    processShot(message.data);
+                    break;
+            }
+        }
+        
+        // Update player information
+        function updatePlayer(playerData) {
+            gameState.players[playerData.id] = playerData;
+            
+            const barrier = document.getElementById(`barrier${playerData.barrierId}`);
+            if (barrier) {
+                barrier.querySelector('.player-avatar').textContent = playerData.name.charAt(0).toUpperCase();
+                barrier.querySelector('.player-name').textContent = playerData.name;
+                barrier.querySelector('.player-score').textContent = playerData.score;
+                
+                if (playerData.blocked) {
+                    barrier.classList.add('blocked');
+                } else {
+                    barrier.classList.remove('blocked');
+                }
+            }
+        }
+        
+        // Remove player
+        function removePlayer(playerId) {
+            const player = gameState.players[playerId];
+            if (player) {
+                const barrier = document.getElementById(`barrier${player.barrierId}`);
+                if (barrier) {
+                    barrier.querySelector('.player-avatar').textContent = '';
+                    barrier.querySelector('.player-name').textContent = '';
+                    barrier.querySelector('.player-score').textContent = '0';
+                    barrier.classList.remove('blocked');
+                }
+                delete gameState.players[playerId];
+            }
+        }
+        
+        // Block player
+        function blockPlayer(playerId) {
+            const player = gameState.players[playerId];
+            if (player) {
+                player.blocked = true;
+                const barrier = document.getElementById(`barrier${player.barrierId}`);
+                barrier.classList.add('blocked');
+            }
+        }
+        
+        // Unblock player
+        function unblockPlayer(playerId) {
+            const player = gameState.players[playerId];
+            if (player) {
+                player.blocked = false;
+                const barrier = document.getElementById(`barrier${player.barrierId}`);
+                barrier.classList.remove('blocked');
+            }
+        }
+        
+        // Start a new round
+        function startRound(roundNumber) {
+            gameState.currentRound = roundNumber;
+            gameState.questionActive = false;
+            gameState.activePlayer = null;
+            
+            roundDisplay.textContent = `Раунд ${roundNumber}`;
+            roundDisplay.style.display = 'block';
+            
+            // Update UI based on round
+            updateControlsForRound(roundNumber);
+            
+            // Reset shots for players
+            if (roundNumber === 2) {
+                gameState.shotsLeft = 2;
+                updateShotsDisplay();
+            } else if (roundNumber === 3) {
+                gameState.shotsLeft = Infinity;
+                updateShotsDisplay();
+            }
+            
+            // Show round start animation
+            document.querySelectorAll('.barrier').forEach(barrier => {
+                barrier.classList.add('flash');
+                setTimeout(() => barrier.classList.remove('flash'), 500);
+            });
+        }
+        
+        // Update controls based on current round
+        function updateControlsForRound(roundNumber) {
+            // Hide all round-specific buttons first
+            document.getElementById('correct-answer').style.display = 'none';
+            document.getElementById('incorrect-answer').style.display = 'none';
+            document.getElementById('correct-safe').style.display = 'none';
+            document.getElementById('incorrect-safe').style.display = 'none';
+            document.getElementById('correct-danger').style.display = 'none';
+            document.getElementById('incorrect-danger').style.display = 'none';
+            document.getElementById('correct-safe-r3').style.display = 'none';
+            document.getElementById('incorrect-safe-r3').style.display = 'none';
+            document.getElementById('correct-danger-r3').style.display = 'none';
+            document.getElementById('incorrect-danger-r3').style.display = 'none';
+            
+            // Show appropriate buttons
+            if (roundNumber === 1) {
+                document.getElementById('correct-answer').style.display = 'inline-block';
+                document.getElementById('incorrect-answer').style.display = 'inline-block';
+            } else if (roundNumber === 2) {
+                document.getElementById('correct-safe').style.display = 'inline-block';
+                document.getElementById('incorrect-safe').style.display = 'inline-block';
+                document.getElementById('correct-danger').style.display = 'inline-block';
+                document.getElementById('incorrect-danger').style.display = 'inline-block';
+            } else if (roundNumber === 3) {
+                document.getElementById('correct-safe-r3').style.display = 'inline-block';
+                document.getElementById('incorrect-safe-r3').style.display = 'inline-block';
+                document.getElementById('correct-danger-r3').style.display = 'inline-block';
+                document.getElementById('incorrect-danger-r3').style.display = 'inline-block';
+            }
+        }
+        
+        // Ask a question
+        function askQuestion(question) {
+            gameState.questionActive = true;
+            gameState.activePlayer = null;
+            
+            questionDisplay.textContent = question;
+            questionDisplay.style.display = 'block';
+            
+            // Start timer based on round
+            if (gameState.currentRound === 1) {
+                startTimer(90); // 1:30 for round 1
+            } else if (gameState.currentRound === 2) {
+                startTimer(120); // 2:00 for round 2
+            } else if (gameState.currentRound === 3) {
+                startTimer(150); // 2:30 for round 3
+            }
+            
+            // Enable buzzer for players
+            if (!gameState.isHost) {
+                buzzer.style.display = 'flex';
+            }
+        }
+        
+        // Start timer
+        function startTimer(seconds) {
+            gameState.timeLeft = seconds;
+            updateTimerDisplay();
+            timerDisplay.style.display = 'block';
+            
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+            }
+            
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                updateTimerDisplay();
+                
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    if (gameState.isHost) {
+                        // Host can decide what to do when time runs out
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Update timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.timeLeft / 60);
+            const seconds = gameState.timeLeft % 60;
+            timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+        
+        // Player buzzed
+        function playerBuzzed(playerId) {
+            if (!gameState.questionActive) return;
+            
+            gameState.questionActive = false;
+            gameState.activePlayer = playerId;
+            
+            // Highlight active player
+            document.querySelectorAll('.barrier').forEach(barrier => barrier.classList.remove('active'));
+            const player = gameState.players[playerId];
+            if (player) {
+                const barrier = document.getElementById(`barrier${player.barrierId}`);
+                barrier.classList.add('active');
+                barrier.classList.add('pulse');
+                
+                activePlayerDisplay.textContent = `${player.name} отвечает`;
+                activePlayerDisplay.style.display = 'block';
+            }
+            
+            // Show who buzzed to host
+            if (gameState.isHost) {
+                alert(`${player.name} нажал на кнопку первым!`);
+            }
+            
+            // Disable buzzer for other players
+            buzzer.style.display = 'none';
+            
+            // Clear timer
+            clearInterval(gameState.timer);
+            timerDisplay.style.display = 'none';
+        }
+        
+        // Process answer result
+        function processAnswerResult(result) {
+            const player = gameState.players[result.playerId];
+            if (player) {
+                const barrier = document.getElementById(`barrier${player.barrierId}`);
+                barrier.querySelector('.player-score').textContent = result.newScore;
+                
+                if (result.correct) {
+                    barrier.classList.add('flash');
+                    setTimeout(() => barrier.classList.remove('flash'), 500);
+                }
+                
+                // Remove active state
+                setTimeout(() => {
+                    barrier.classList.remove('active');
+                    barrier.classList.remove('pulse');
+                    activePlayerDisplay.style.display = 'none';
+                }, 2000);
+            }
+        }
+        
+        // End round
+        function endRound() {
+            questionDisplay.style.display = 'none';
+            timerDisplay.style.display = 'none';
+            activePlayerDisplay.style.display = 'none';
+            
+            // Remove active state from all barriers
+            document.querySelectorAll('.barrier').forEach(barrier => {
+                barrier.classList.remove('active');
+                barrier.classList.remove('pulse');
+            });
+            
+            // Disable buzzer
+            buzzer.style.display = 'none';
+            
+            // Clear timer
+            clearInterval(gameState.timer);
+        }
+        
+        // End game
+        function endGame(winner) {
+            endRound();
+            alert(`Игра окончена! Победитель: ${winner.name} с ${winner.score} очками!`);
+        }
+        
+        // Process shot (question transfer)
+        function processShot(data) {
+            gameState.shotsLeft = data.shotsLeft;
+            updateShotsDisplay();
+            
+            const fromPlayer = gameState.players[data.fromPlayerId];
+            const toPlayer = gameState.players[data.toPlayerId];
+            
+            if (fromPlayer && toPlayer) {
+                alert(`${fromPlayer.name} передает вопрос ${toPlayer.name}!`);
+                
+                if (toPlayer.blocked) {
+                    unblockPlayer(toPlayer.id);
+                }
+            }
+        }
+        
+        // Update shots display
+        function updateShotsDisplay() {
+            if (gameState.shotsLeft === Infinity) {
+                useShotBtn.textContent = 'Выстрелы (неограничено)';
+            } else {
+                useShotBtn.textContent = `Выстрелы (осталось: ${gameState.shotsLeft})`;
+            }
+        }
+        
+        // Show shot options modal
+        function showShotOptions() {
+            if (gameState.shotsLeft <= 0) return;
+            
+            shotOptions.innerHTML = '';
+            
+            // Add options for all players except self
+            Object.values(gameState.players).forEach(player => {
+                if (player.id !== gameState.playerId) {
+                    const option = document.createElement('div');
+                    option.className = 'shot-option';
+                    option.textContent = player.name;
+                    option.dataset.playerId = player.id;
+                    option.addEventListener('click', () => useShot(player.id));
+                    shotOptions.appendChild(option);
+                }
+            });
+            
+            shotModal.style.display = 'block';
+        }
+        
+        // Use shot (transfer question)
+        function useShot(playerId) {
+            shotModal.style.display = 'none';
+            
+            if (gameState.isHost) {
+                alert('Ведущий не может использовать выстрелы');
+                return;
+            }
+            
+            if (gameState.shotsLeft <= 0 && gameState.currentRound !== 3) return;
+            
+            // In a real implementation, this would send a WebSocket message
+            gameState.websocket.send(JSON.stringify({
+                type: 'use_shot',
+                data: {
+                    fromPlayerId: gameState.playerId,
+                    toPlayerId: playerId,
+                    round: gameState.currentRound
+                }
+            }));
+            
+            // For demo purposes, we'll just mock the response
+            if (gameState.currentRound !== 3) {
+                gameState.shotsLeft--;
+            }
+            updateShotsDisplay();
+            
+            // Mock the WebSocket event
+            mockWebSocketEvent('shot_used', {
+                fromPlayerId: gameState.playerId,
+                toPlayerId: playerId,
+                shotsLeft: gameState.shotsLeft
+            });
+        }
+        
+        // Initialize the game
+        function init() {
+            initWebSocket();
+            
+            // Event listeners for login
+            document.getElementById('join-as-player').addEventListener('click', () => {
+                const name = document.getElementById('player-name').value.trim();
+                if (name) {
+                    gameState.playerName = name;
+                    loginModal.style.display = 'none';
+                    barrierSelectModal.style.display = 'block';
+                }
+            });
+            
+            document.getElementById('join-as-host').addEventListener('click', () => {
+                loginModal.style.display = 'none';
+                hostLoginModal.style.display = 'block';
+            });
+            
+            document.getElementById('back-to-login').addEventListener('click', () => {
+                hostLoginModal.style.display = 'none';
+                loginModal.style.display = 'block';
+            });
+            
+            document.getElementById('confirm-host').addEventListener('click', () => {
+                const password = document.getElementById('host-password').value;
+                if (password === '42321') {
+                    gameState.isHost = true;
+                    gameState.playerName = 'Ведущий';
+                    hostLoginModal.style.display = 'none';
+                    hostControls.style.display = 'flex';
+                    
+                    // For demo, add some mock players
+                    mockWebSocketEvent('player_joined', { id: 'p1', name: 'Игрок 1', barrierId: 1, score: 0, blocked: false });
+                    mockWebSocketEvent('player_joined', { id: 'p2', name: 'Игрок 2', barrierId: 2, score: 0, blocked: false });
+                    mockWebSocketEvent('player_joined', { id: 'p3', name: 'Игрок 3', barrierId: 3, score: 0, blocked: false });
+                } else {
+                    alert('Неверный пароль');
+                }
+            });
+            
+            // Event listeners for barrier selection
+            document.querySelectorAll('.barrier-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const barrierId = parseInt(btn.dataset.barrier);
+                    gameState.barrierId = barrierId;
+                    barrierSelectModal.style.display = 'none';
+                    playerControls.style.display = 'flex';
+                    
+                    // In a real implementation, this would send a WebSocket message
+                    gameState.playerId = `player_${Math.floor(Math.random() * 10000)}`;
+                    gameState.websocket.send(JSON.stringify({
+                        type: 'join_game',
+                        data: {
+                            playerId: gameState.playerId,
+                            name: gameState.playerName,
+                            barrierId: barrierId
+                        }
+                    }));
+                    
+                    // For demo purposes, we'll just mock the response
+                    mockWebSocketEvent('player_joined', {
+                        id: gameState.playerId,
+                        name: gameState.playerName,
+                        barrierId: barrierId,
+                        score: 0,
+                        blocked: false
+                    });
+                });
+            });
+            
+            // Event listeners for host controls
+            document.getElementById('start-round').addEventListener('click', () => {
+                const nextRound = gameState.currentRound + 1;
+                if (nextRound > 3) nextRound = 1;
+                
+                gameState.websocket.send(JSON.stringify({
+                    type: 'start_round',
+                    data: { round: nextRound }
+                }));
+                
+                // For demo
+                mockWebSocketEvent('round_started', { round: nextRound });
+            });
+            
+            document.getElementById('correct-answer').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        points: 1
+                    }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.score += 1;
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            document.getElementById('incorrect-answer').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        points: 0
+                    }
+                }));
+                
+                // Also block the player in round 1
+                if (gameState.currentRound === 1) {
+                    gameState.websocket.send(JSON.stringify({
+                        type: 'block_player',
+                        data: { playerId: gameState.activePlayer }
+                    }));
+                    
+                    // For demo
+                    const player = gameState.players[gameState.activePlayer];
+                    if (player) {
+                        player.blocked = true;
+                        mockWebSocketEvent('player_blocked', { playerId: gameState.activePlayer });
+                    }
+                }
+                
+                // For demo - just show the message
+                mockWebSocketEvent('answer_result', {
+                    playerId: gameState.activePlayer,
+                    correct: false,
+                    newScore: gameState.players[gameState.activePlayer]?.score || 0
+                });
+            });
+            
+            // Round 2 controls
+            document.getElementById('correct-safe').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.bankType = 'safe';
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        points: 1
+                    }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.score += 1;
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            document.getElementById('incorrect-safe').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.bankType = 'safe';
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        points: 0
+                    }
+                }));
+                
+                // Block the player in safe bank
+                gameState.websocket.send(JSON.stringify({
+                    type: 'block_player',
+                    data: { playerId: gameState.activePlayer }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.blocked = true;
+                    mockWebSocketEvent('player_blocked', { playerId: gameState.activePlayer });
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            document.getElementById('correct-danger').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.bankType = 'danger';
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        points: 2
+                    }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.score += 2;
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            document.getElementById('incorrect-danger').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.bankType = 'danger';
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        points: -1
+                    }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.score = Math.max(-1, player.score - 1);
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            // Round 3 controls
+            document.getElementById('correct-safe-r3').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.bankType = 'safe';
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        points: 2
+                    }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.score += 2;
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            document.getElementById('incorrect-safe-r3').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.bankType = 'safe';
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        points: -1
+                    }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.score = Math.max(-1, player.score - 1);
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            document.getElementById('correct-danger-r3').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.bankType = 'danger';
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        points: 3
+                    }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.score += 3;
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: true,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            document.getElementById('incorrect-danger-r3').addEventListener('click', () => {
+                if (!gameState.activePlayer) return;
+                
+                gameState.bankType = 'danger';
+                gameState.websocket.send(JSON.stringify({
+                    type: 'answer_result',
+                    data: {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        points: -2
+                    }
+                }));
+                
+                // For demo
+                const player = gameState.players[gameState.activePlayer];
+                if (player) {
+                    player.score = Math.max(-2, player.score - 2);
+                    mockWebSocketEvent('answer_result', {
+                        playerId: gameState.activePlayer,
+                        correct: false,
+                        newScore: player.score
+                    });
+                }
+            });
+            
+            // Player controls
+            buzzer.addEventListener('click', () => {
+                if (!gameState.questionActive || gameState.isHost) return;
+                
+                gameState.websocket.send(JSON.stringify({
+                    type: 'buzz',
+                    data: { playerId: gameState.playerId }
+                }));
+                
+                // For demo
+                mockWebSocketEvent('player_buzzed', { playerId: gameState.playerId });
+            });
+            
+            document.getElementById('use-shot').addEventListener('click', showShotOptions);
+            document.getElementById('cancel-shot').addEventListener('click', () => {
+                shotModal.style.display = 'none';
+            });
+            
+            // For demo purposes - simulate a game
+            if (location.search.includes('demo=1')) {
+                setTimeout(() => {
+                    document.getElementById('player-name').value = 'Демо Игрок';
+                    document.getElementById('join-as-player').click();
+                    setTimeout(() => {
+                        document.querySelector('.barrier-option').click();
+                        setTimeout(() => {
+                            mockWebSocketEvent('round_started', { round: 1 });
+                            setTimeout(() => {
+                                mockWebSocketEvent('question_asked', { question: 'Какая столица Франции?' });
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }, 500);
+            }
+        }
+        
+        // Start the game when page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
